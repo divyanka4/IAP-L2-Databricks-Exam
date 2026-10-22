@@ -1,0 +1,1588 @@
+{
+  "datasets": [
+    {
+      "name": "ec1f1fe6",
+      "displayName": "Sales Star (fact_sales + dims)",
+      "config": {
+        "source": "tpch_sales.gold.fact_sales",
+        "measures": [
+          {
+            "displayName": "Net Revenue",
+            "format": {
+              "type": "currency",
+              "currencyCode": "USD",
+              "abbreviation": "compact",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            },
+            "name": "net_revenue",
+            "expr": "SUM(source.extended_price * (1 - source.discount))",
+            "comment": "Sum of extended price net of discount"
+          },
+          {
+            "displayName": "Orders",
+            "format": {
+              "type": "number",
+              "abbreviation": "compact"
+            },
+            "name": "order_count",
+            "expr": "COUNT(DISTINCT source.order_key)",
+            "comment": "Distinct orders"
+          },
+          {
+            "displayName": "Active Customers",
+            "format": {
+              "type": "number",
+              "abbreviation": "compact"
+            },
+            "name": "active_customers",
+            "expr": "COUNT(DISTINCT source.customer_key)",
+            "comment": "Distinct customers with at least one order line"
+          },
+          {
+            "displayName": "Average Order Value",
+            "format": {
+              "type": "currency",
+              "currencyCode": "USD",
+              "abbreviation": "compact",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            },
+            "name": "avg_order_value",
+            "expr": "MEASURE(`net_revenue`) / MEASURE(`order_count`)",
+            "comment": "Net revenue per distinct order"
+          },
+          {
+            "displayName": "Avg Discount",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            },
+            "name": "avg_discount",
+            "expr": "AVG(source.discount)",
+            "comment": "Average line discount rate"
+          },
+          {
+            "displayName": "Avg Ship Days",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            },
+            "name": "avg_ship_days",
+            "expr": "AVG(DATEDIFF(source.receipt_date, source.ship_date))",
+            "comment": "Average days from ship date to receipt date"
+          }
+        ],
+        "version": "1.1",
+        "comment": "Star-joined sales model for the TPC-H Gold analytics dashboard",
+        "dimensions": [
+          {
+            "name": "order_date",
+            "expr": "source.order_date",
+            "comment": "Order date"
+          },
+          {
+            "name": "order_month",
+            "expr": "DATE_TRUNC('MONTH', source.order_date)",
+            "comment": "Calendar month of the order date"
+          },
+          {
+            "name": "customer_region",
+            "expr": "source.customer_region_name",
+            "comment": "Customer region"
+          },
+          {
+            "name": "customer_nation",
+            "expr": "source.customer_nation_name",
+            "comment": "Customer nation"
+          },
+          {
+            "name": "supplier_region",
+            "expr": "source.supplier_region_name",
+            "comment": "Supplier region"
+          },
+          {
+            "name": "supplier_nation",
+            "expr": "source.supplier_nation_name",
+            "comment": "Supplier nation"
+          },
+          {
+            "name": "market_segment",
+            "expr": "customers.market_segment",
+            "comment": "Customer market segment"
+          },
+          {
+            "name": "customer_name",
+            "expr": "customers.customer_name",
+            "comment": "Customer name"
+          },
+          {
+            "name": "product_name",
+            "expr": "products.product_name",
+            "comment": "Product name"
+          },
+          {
+            "name": "supplier_name",
+            "expr": "suppliers.supplier_name",
+            "comment": "Supplier name"
+          },
+          {
+            "name": "ship_mode",
+            "expr": "source.ship_mode",
+            "comment": "Ship mode"
+          }
+        ],
+        "joins": [
+          {
+            "name": "customers",
+            "source": "tpch_sales.gold.dim_customer",
+            "cardinality": "many_to_one",
+            "on": "source.customer_key = customers.customer_key",
+            "rely": {
+              "atMostOneMatch": true
+            }
+          },
+          {
+            "name": "products",
+            "source": "tpch_sales.gold.dim_product",
+            "cardinality": "many_to_one",
+            "on": "source.product_key = products.product_key",
+            "rely": {
+              "atMostOneMatch": true
+            }
+          },
+          {
+            "name": "suppliers",
+            "source": "tpch_sales.gold.dim_supplier",
+            "cardinality": "many_to_one",
+            "on": "source.supplier_key = suppliers.supplier_key",
+            "rely": {
+              "atMostOneMatch": true
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "pages": [
+    {
+      "name": "c7b8c893",
+      "displayName": "Executive Overview",
+      "layout": [
+        {
+          "widget": {
+            "name": "kpi_net_revenue",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ec1f1fe6",
+                  "fields": [
+                    {
+                      "name": "measure(net_revenue)",
+                      "expression": "MEASURE(`net_revenue`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Net Revenue"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(net_revenue)",
+                  "format": {
+                    "abbreviation": "compact",
+                    "currencyCode": "USD",
+                    "decimalPlaces": {
+                      "places": 1,
+                      "type": "max"
+                    },
+                    "type": "number-currency"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_orders",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ec1f1fe6",
+                  "fields": [
+                    {
+                      "name": "measure(order_count)",
+                      "expression": "MEASURE(`order_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Distinct Orders"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(order_count)",
+                  "format": {
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "places": 1,
+                      "type": "max"
+                    },
+                    "type": "number-plain"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_active_customers",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ec1f1fe6",
+                  "fields": [
+                    {
+                      "name": "measure(active_customers)",
+                      "expression": "MEASURE(`active_customers`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Active Customers"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(active_customers)",
+                  "format": {
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "places": 1,
+                      "type": "max"
+                    },
+                    "type": "number-plain"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_avg_order_value",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ec1f1fe6",
+                  "fields": [
+                    {
+                      "name": "measure(avg_order_value)",
+                      "expression": "MEASURE(`avg_order_value`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Average Order Value"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(avg_order_value)",
+                  "format": {
+                    "abbreviation": "compact",
+                    "currencyCode": "USD",
+                    "decimalPlaces": {
+                      "places": 1,
+                      "type": "max"
+                    },
+                    "type": "number-currency"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "revenue_trend",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ec1f1fe6",
+                  "fields": [
+                    {
+                      "name": "order_month",
+                      "expression": "`order_month`"
+                    },
+                    {
+                      "name": "measure(net_revenue)",
+                      "expression": "MEASURE(`net_revenue`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Net Revenue Trend (Monthly)",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#2C6BC4"
+                ]
+              },
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "order_month",
+                  "format": {
+                    "date": "locale-short-month",
+                    "type": "date"
+                  },
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(net_revenue)",
+                  "format": {
+                    "abbreviation": "compact",
+                    "currencyCode": "USD",
+                    "decimalPlaces": {
+                      "places": 1,
+                      "type": "max"
+                    },
+                    "type": "number-currency"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 8,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "revenue_by_region",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ec1f1fe6",
+                  "fields": [
+                    {
+                      "name": "customer_region",
+                      "expression": "`customer_region`"
+                    },
+                    {
+                      "name": "measure(net_revenue)",
+                      "expression": "MEASURE(`net_revenue`)"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "MEASURE(`net_revenue`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Net Revenue by Customer Region",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#7B5BC7"
+                ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "customer_region",
+                  "axis": {
+                    "labelAngle": 45
+                  },
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "measure-reversed",
+                      "measure": {
+                        "fieldName": "measure(net_revenue)"
+                      }
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(net_revenue)",
+                  "format": {
+                    "abbreviation": "compact",
+                    "currencyCode": "USD",
+                    "decimalPlaces": {
+                      "places": 1,
+                      "type": "max"
+                    },
+                    "type": "number-currency"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 3,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "top_customers",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ec1f1fe6",
+                  "fields": [
+                    {
+                      "name": "customer_name",
+                      "expression": "`customer_name`"
+                    },
+                    {
+                      "name": "measure(net_revenue)",
+                      "expression": "MEASURE(`net_revenue`)"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "MEASURE(`net_revenue`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Top 10 Customers by Net Revenue",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#2FB08C"
+                ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "customer_name",
+                  "axis": {
+                    "labelAngle": 45
+                  },
+                  "scale": {
+                    "categorySize": {
+                      "number": 10,
+                      "type": "number-of-categories"
+                    },
+                    "type": "categorical",
+                    "sort": {
+                      "by": "measure-reversed",
+                      "measure": {
+                        "fieldName": "measure(net_revenue)"
+                      }
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(net_revenue)",
+                  "format": {
+                    "abbreviation": "compact",
+                    "currencyCode": "USD",
+                    "decimalPlaces": {
+                      "places": 1,
+                      "type": "max"
+                    },
+                    "type": "number-currency"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 12,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "customer_product",
+      "displayName": "Customer & Product Analytics",
+      "layout": [
+        {
+          "widget": {
+            "name": "revenue_by_segment",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ec1f1fe6",
+                  "fields": [
+                    {
+                      "name": "market_segment",
+                      "expression": "`market_segment`"
+                    },
+                    {
+                      "name": "measure(net_revenue)",
+                      "expression": "MEASURE(`net_revenue`)"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "MEASURE(`net_revenue`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Net Revenue by Market Segment",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#FF8A3C"
+                ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "market_segment",
+                  "axis": {
+                    "labelAngle": 45
+                  },
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "measure-reversed",
+                      "measure": {
+                        "fieldName": "measure(net_revenue)"
+                      }
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(net_revenue)",
+                  "format": {
+                    "abbreviation": "compact",
+                    "currencyCode": "USD",
+                    "decimalPlaces": {
+                      "places": 1,
+                      "type": "max"
+                    },
+                    "type": "number-currency"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "top_products",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ec1f1fe6",
+                  "fields": [
+                    {
+                      "name": "product_name",
+                      "expression": "`product_name`"
+                    },
+                    {
+                      "name": "measure(net_revenue)",
+                      "expression": "MEASURE(`net_revenue`)"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "MEASURE(`net_revenue`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Top 10 Products by Net Revenue",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#4EA5D9"
+                ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "product_name",
+                  "axis": {
+                    "labelAngle": 45
+                  },
+                  "scale": {
+                    "categorySize": {
+                      "number": 10,
+                      "type": "number-of-categories"
+                    },
+                    "type": "categorical",
+                    "sort": {
+                      "by": "measure-reversed",
+                      "measure": {
+                        "fieldName": "measure(net_revenue)"
+                      }
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(net_revenue)",
+                  "format": {
+                    "abbreviation": "compact",
+                    "currencyCode": "USD",
+                    "decimalPlaces": {
+                      "places": 1,
+                      "type": "max"
+                    },
+                    "type": "number-currency"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 0,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "bottom_products",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ec1f1fe6",
+                  "fields": [
+                    {
+                      "name": "product_name",
+                      "expression": "`product_name`"
+                    },
+                    {
+                      "name": "measure(net_revenue)",
+                      "expression": "MEASURE(`net_revenue`)"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "ASC",
+                      "expression": "MEASURE(`net_revenue`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Bottom 10 Products by Net Revenue",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#E4572E"
+                ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "product_name",
+                  "axis": {
+                    "labelAngle": 45
+                  },
+                  "scale": {
+                    "categorySize": {
+                      "number": 10,
+                      "type": "number-of-categories"
+                    },
+                    "type": "categorical",
+                    "sort": {
+                      "by": "measure",
+                      "measure": {
+                        "fieldName": "measure(net_revenue)"
+                      }
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(net_revenue)",
+                  "format": {
+                    "abbreviation": "compact",
+                    "currencyCode": "USD",
+                    "decimalPlaces": {
+                      "places": 1,
+                      "type": "max"
+                    },
+                    "type": "number-currency"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "discount_by_segment",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ec1f1fe6",
+                  "fields": [
+                    {
+                      "name": "market_segment",
+                      "expression": "`market_segment`"
+                    },
+                    {
+                      "name": "measure(avg_discount)",
+                      "expression": "MEASURE(`avg_discount`)"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "MEASURE(`avg_discount`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Average Discount by Market Segment",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#B85BC0"
+                ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "market_segment",
+                  "axis": {
+                    "labelAngle": 45
+                  },
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "measure-reversed",
+                      "measure": {
+                        "fieldName": "measure(avg_discount)"
+                      }
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(avg_discount)",
+                  "format": {
+                    "decimalPlaces": {
+                      "places": 2,
+                      "type": "exact"
+                    },
+                    "type": "number-percent"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 6,
+            "width": 6,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "supply_chain",
+      "displayName": "Supply Chain Analytics",
+      "layout": [
+        {
+          "widget": {
+            "name": "top_suppliers",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ec1f1fe6",
+                  "fields": [
+                    {
+                      "name": "supplier_name",
+                      "expression": "`supplier_name`"
+                    },
+                    {
+                      "name": "measure(net_revenue)",
+                      "expression": "MEASURE(`net_revenue`)"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "MEASURE(`net_revenue`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Top 10 Suppliers by Net Revenue",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#F2C14E"
+                ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "supplier_name",
+                  "axis": {
+                    "labelAngle": 45
+                  },
+                  "scale": {
+                    "categorySize": {
+                      "number": 10,
+                      "type": "number-of-categories"
+                    },
+                    "type": "categorical",
+                    "sort": {
+                      "by": "measure-reversed",
+                      "measure": {
+                        "fieldName": "measure(net_revenue)"
+                      }
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(net_revenue)",
+                  "format": {
+                    "abbreviation": "compact",
+                    "currencyCode": "USD",
+                    "decimalPlaces": {
+                      "places": 1,
+                      "type": "max"
+                    },
+                    "type": "number-currency"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "revenue_by_nation",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ec1f1fe6",
+                  "fields": [
+                    {
+                      "name": "customer_nation",
+                      "expression": "`customer_nation`"
+                    },
+                    {
+                      "name": "measure(net_revenue)",
+                      "expression": "MEASURE(`net_revenue`)"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "MEASURE(`net_revenue`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Net Revenue by Customer Nation",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#5DA97A"
+                ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "customer_nation",
+                  "axis": {
+                    "labelAngle": 45
+                  },
+                  "scale": {
+                    "categorySize": {
+                      "number": 10,
+                      "type": "number-of-categories"
+                    },
+                    "type": "categorical",
+                    "sort": {
+                      "by": "measure-reversed",
+                      "measure": {
+                        "fieldName": "measure(net_revenue)"
+                      }
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(net_revenue)",
+                  "format": {
+                    "abbreviation": "compact",
+                    "currencyCode": "USD",
+                    "decimalPlaces": {
+                      "places": 1,
+                      "type": "max"
+                    },
+                    "type": "number-currency"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 0,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "ship_time_by_mode",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ec1f1fe6",
+                  "fields": [
+                    {
+                      "name": "ship_mode",
+                      "expression": "`ship_mode`"
+                    },
+                    {
+                      "name": "measure(avg_ship_days)",
+                      "expression": "MEASURE(`avg_ship_days`)"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "MEASURE(`avg_ship_days`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Average Shipping Time by Ship Mode",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#8A6FE8"
+                ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "ship_mode",
+                  "axis": {
+                    "labelAngle": 45
+                  },
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "measure-reversed",
+                      "measure": {
+                        "fieldName": "measure(avg_ship_days)"
+                      }
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(avg_ship_days)",
+                  "format": {
+                    "abbreviation": "none",
+                    "decimalPlaces": {
+                      "places": 1,
+                      "type": "exact"
+                    },
+                    "type": "number-plain"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "supplier_concentration",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ec1f1fe6",
+                  "fields": [
+                    {
+                      "name": "measure(net_revenue)",
+                      "expression": "MEASURE(`net_revenue`)"
+                    },
+                    {
+                      "name": "supplier_region",
+                      "expression": "`supplier_region`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Supplier Revenue Concentration by Region"
+              },
+              "version": 3,
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "measure(net_revenue)",
+                  "format": {
+                    "abbreviation": "compact",
+                    "currencyCode": "USD",
+                    "decimalPlaces": {
+                      "places": 1,
+                      "type": "max"
+                    },
+                    "type": "number-currency"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "supplier_region",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 6,
+            "width": 6,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "global_filters",
+      "displayName": "Global Filters",
+      "layout": [
+        {
+          "widget": {
+            "name": "order_date_range",
+            "queries": [
+              {
+                "name": "dashboards/01f1ce03a6c61750834631e496fe7f76/datasets/01f1ce0570421eef9306b4cd123d3e26_order_date",
+                "query": {
+                  "datasetName": "ec1f1fe6",
+                  "fields": [
+                    {
+                      "name": "order_date",
+                      "expression": "`order_date`"
+                    },
+                    {
+                      "name": "order_date_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Order Date Range"
+              },
+              "widgetType": "filter-date-range-picker",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "order_date",
+                    "queryName": "dashboards/01f1ce03a6c61750834631e496fe7f76/datasets/01f1ce0570421eef9306b4cd123d3e26_order_date"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 4,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "customer_region_filter",
+            "queries": [
+              {
+                "name": "dashboards/01f1ce03a6c61750834631e496fe7f76/datasets/01f1ce0570421eef9306b4cd123d3e26_customer_region",
+                "query": {
+                  "datasetName": "ec1f1fe6",
+                  "fields": [
+                    {
+                      "name": "customer_region",
+                      "expression": "`customer_region`"
+                    },
+                    {
+                      "name": "customer_region_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Customer Region"
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "customer_region",
+                    "queryName": "dashboards/01f1ce03a6c61750834631e496fe7f76/datasets/01f1ce0570421eef9306b4cd123d3e26_customer_region"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 0,
+            "width": 4,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "market_segment_filter",
+            "queries": [
+              {
+                "name": "dashboards/01f1ce03a6c61750834631e496fe7f76/datasets/01f1ce0570421eef9306b4cd123d3e26_market_segment",
+                "query": {
+                  "datasetName": "ec1f1fe6",
+                  "fields": [
+                    {
+                      "name": "market_segment",
+                      "expression": "`market_segment`"
+                    },
+                    {
+                      "name": "market_segment_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Market Segment"
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "market_segment",
+                    "queryName": "dashboards/01f1ce03a6c61750834631e496fe7f76/datasets/01f1ce0570421eef9306b4cd123d3e26_market_segment"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 0,
+            "width": 4,
+            "height": 4
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "canvasBackgroundColor": {
+        "light": "#E6E9EA",
+        "dark": "#1E2931"
+      },
+      "widgetBackgroundColor": {
+        "light": "#FFFFFF",
+        "dark": "#15181C"
+      },
+      "widgetBorderColor": {
+        "light": "#F3F5F6",
+        "dark": "#21292F"
+      },
+      "fontColor": {
+        "light": "#1A2127",
+        "dark": "#EEF0F2"
+      },
+      "selectionColor": {
+        "light": "#0E7AB9",
+        "dark": "#41ADEC"
+      },
+      "visualizationColors": [
+        "#A6CEE3",
+        "#1F78B4",
+        "#B2DF8A",
+        "#33A02C",
+        "#FB9A99",
+        "#E31A1C",
+        "#FDBF6F",
+        "#FF7F00",
+        "#CAB2D6",
+        "#6A3D9A",
+        "#FFFF99",
+        "#B15928"
+      ],
+      "widgetHeaderAlignment": "LEFT",
+      "fontFamily": "Inter",
+      "widgetPadding": 16,
+      "widgetMargin": 8,
+      "widgetCornerRadius": 16,
+      "widgetShadow": 50,
+      "continuousGradient": {
+        "lightMode": {
+          "fromCategoricalIndex": 0
+        },
+        "darkMode": {
+          "fromCategoricalIndex": 0
+        }
+      },
+      "fontSettings": {
+        "base": {
+          "fontFamily": "Inter",
+          "fontColor": {
+            "light": "#1A2127",
+            "dark": "#EEF0F2"
+          },
+          "fontSize": 14,
+          "fontWeight": 400
+        },
+        "widgetTitle": {
+          "fontSize": 16,
+          "fontWeight": 500
+        },
+        "widgetDescription": {
+          "fontSize": 14,
+          "fontWeight": 400
+        },
+        "fieldTitle": {
+          "textCase": "TEXT_CASE_UPPERCASE",
+          "fontColor": {
+            "light": "#31373D",
+            "dark": "#D6D8DA"
+          },
+          "fontSize": 13,
+          "fontWeight": 400
+        },
+        "fieldValue": {
+          "fontColor": {
+            "light": "#31373D",
+            "dark": "#D6D8DA"
+          },
+          "fontSize": 13,
+          "fontWeight": 400
+        }
+      },
+      "gridLineColor": {
+        "light": "#D6D7D8",
+        "dark": "#3C3E42"
+      },
+      "axisLineColor": {
+        "light": "#B0B4B6",
+        "dark": "#555E64"
+      }
+    },
+    "applyModeEnabled": false
+  }
+}

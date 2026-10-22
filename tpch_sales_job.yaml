@@ -1,0 +1,47 @@
+resources:
+  jobs:
+    tpch_sales_pipeline:
+      name: tpch_sales_pipeline
+      schedule:
+        quartz_cron_expression: 34 0 6 * * ?
+        timezone_id: Asia/Calcutta
+        pause_status: UNPAUSED
+      tasks:
+        - task_key: bronze_ingestion
+          notebook_task:
+            notebook_path: /Workspace/Users/divyapal@cyntexa.com/IAP-L2-Databricks-Exam/02_bronze_ingestion
+            base_parameters:
+              pipeline_runID: "{{job.run_id}}"
+            source: WORKSPACE
+          min_retry_interval_millis: 900000
+          disable_auto_optimization: true
+        - task_key: silver_cleaning
+          depends_on:
+            - task_key: bronze_ingestion
+          notebook_task:
+            notebook_path: /Workspace/Users/divyapal@cyntexa.com/IAP-L2-Databricks-Exam/03_silver_clean
+            source: WORKSPACE
+          min_retry_interval_millis: 900000
+          disable_auto_optimization: true
+        - task_key: gold_build
+          depends_on:
+            - task_key: silver_cleaning
+          notebook_task:
+            notebook_path: /Workspace/Users/divyapal@cyntexa.com/IAP-L2-Databricks-Exam/04_gold_build
+            source: WORKSPACE
+          min_retry_interval_millis: 900000
+          disable_auto_optimization: true
+        - task_key: quality_check
+          depends_on:
+            - task_key: gold_build
+          notebook_task:
+            notebook_path: /Workspace/Users/divyapal@cyntexa.com/IAP-L2-Databricks-Exam/05_data_quality
+            source: WORKSPACE
+          min_retry_interval_millis: 900000
+          disable_auto_optimization: true
+      queue:
+        enabled: true
+      parameters:
+        - name: catalog
+          default: tpch_sales
+      performance_target: PERFORMANCE_OPTIMIZED
